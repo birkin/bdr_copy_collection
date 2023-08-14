@@ -44,7 +44,7 @@ class Runner():
 
 def parse_args() -> tuple:
     """ Parses arguments when module called via __main__ """
-    description = '''Downloads items from the production BDR to be copied onto the dev instance (using a companion script in a separate step).
+    description = '''Downloads items from the production BDR to be copied onto the dev instance (using a separate companion script).
     
     Usage examples:
 
