@@ -44,9 +44,31 @@ class Runner():
 
 def parse_args() -> tuple:
     """ Parses arguments when module called via __main__ """
-    parser = argparse.ArgumentParser( description='Downloads items from the production BDR to be copied onto the dev instance (using a companion script in a separate step). Note: either a `pid` or `collection` pid are required.' )
+    description = '''Downloads items from the production BDR to be copied onto the dev instance (using a companion script in a separate step).
+    
+    Usage examples:
+
+        first...
+
+        $ cd /path/to/bdr_copy_collection_project
+        $ source ../env/bin/activate
+        $ source ../settings_env.sh
+
+        ...then...
+
+        $ python ./bdr_download_from_prod.py --pid bdr:1234
+
+        ...or...
+
+        $ python ./bdr_download_from_prod.py --pid bdr:1234 --level thumbnail
+
+        ...or, when implemented...
+
+        $ python ./bdr_download_from_prod.py --collection_pid bdr:5678 --subcollection_pids bdr:9012,bdr:3456
+        -------'''
+    parser = argparse.ArgumentParser( description=description, formatter_class=argparse.RawTextHelpFormatter )
     parser.add_argument( '-p', '--pid', help='BDR item-pid; will download that item and all necessary connections (parent/child/etc).', type=str )
-    parser.add_argument( '-c', '--collection_pid', help='BDR collection-pid; will download all items in that collection (BE CAREFUL! Some collections are extremely large!).', type=str )
+    parser.add_argument( '-c', '--collection_pid', help='(not yet implemented) BDR collection-pid; will download all items in that collection (BE CAREFUL! Some collections are extremely large!).', type=str )
     parser.add_argument( '-l', '--level', default='thumbnail', help='Specifies what resolution of images to download, or metadata only. Options are "metadata", "thumbnail" (default), or "full".', type=str )
     args: dict = vars( parser.parse_args() )
     log.debug( f'args, ```{args}```' )
@@ -56,7 +78,12 @@ def parse_args() -> tuple:
 
 def validate_args( args ) -> bool:
     """ Validates arguments when module called via __main__ """
-    if args['pid'] and args['collection_pid']:
+    if args['collection_pid']:
+        msg = '\nThis mode is not yet implemented; quitting\n'
+        log.warning( msg )
+        print( msg )
+        valid = False
+    elif args['pid'] and args['collection_pid']:
         err_msg = '\nonly one of `pid` or `collection_pid` should be specified; quitting\n'
         log.error( err_msg )
         print( err_msg )
