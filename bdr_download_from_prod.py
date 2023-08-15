@@ -4,9 +4,14 @@ Download from production script.
 
 import argparse, logging, os, pprint, shutil, subprocess, sys
 
+
 ## envars -----------------------------------------------------------
 LOG_PATH = os.environ['COPY_COLL__LOG_PATH']
 LOG_LEVEL = os.environ['COPY_COLL__LOG_LEVEL']
+BDR_TOOLS_DIR_PATH = os.environ['COPY_COLL__BDR_TOOLS_DIR_PATH']   
+
+sys.path.append( BDR_TOOLS_DIR_PATH )
+import bdr_tools as bt
 
 
 ## set up logging ---------------------------------------------------
@@ -24,17 +29,22 @@ def run_manager( pid: str, collection: str, level: str ) -> None:
     """ Manages download flow.
         Called by dundermain. """
     
-    ## gather args --------------------------------------------------
+    ## find top pid -------------------------------------------------
     
     ## end def run_manager()
 
 
-class Runner():
+## helpers ----------------------------------------------------------
 
-    def __init__(self) -> None:
-        self.pid = ''
-        self.collection_pid = ''
-        self.level = ''
+def find_top (pid):
+    current_item = bt.Item(pid)
+    api = current_item.api()
+    relationships = api['relations']
+    parents = [i['pid'] for i in relationships['isPartOf']]
+    if parents:
+        return [find_top(i) for i in parents]
+    else:
+        return pid
 
 
 
@@ -102,6 +112,7 @@ def validate_args( args ) -> bool:
 ## dudermain --------------------------------------------------------
 
 if __name__ == '__main__':
+    log.debug( '\n\nstarting script' )
     ( parser, args ) = parse_args()
     args_valid: bool = validate_args( args )
     if not args_valid:
@@ -111,3 +122,4 @@ if __name__ == '__main__':
     collection: str = args['collection_pid']
     level: str = args['level']
     run_manager( pid, collection, level )
+    log.debug( 'script complete' )
